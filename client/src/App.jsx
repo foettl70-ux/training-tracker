@@ -6,6 +6,7 @@ import TrainingPage from './pages/Training.jsx';
 import WorkoutDetailPage from './pages/WorkoutDetail.jsx';
 import BodyweightPage from './pages/Bodyweight.jsx';
 import ProgressPage from './pages/Progress.jsx';
+import CalendarPage from './pages/Calendar.jsx';
 
 function Logo() {
   return (
@@ -18,6 +19,7 @@ function Logo() {
 
 const navItems = [
   { to: '/training', label: 'Training' },
+  { to: '/kalender', label: 'Kalender' },
   { to: '/exercises', label: 'Übungen' },
   { to: '/templates', label: 'Vorlagen' },
   { to: '/bodyweight', label: 'Körpergewicht' },
@@ -73,6 +75,7 @@ function App() {
           <Route path="/" element={<Navigate to="/training" replace />} />
           <Route path="/training" element={<TrainingPage />} />
           <Route path="/training/:id" element={<WorkoutDetailPage />} />
+          <Route path="/kalender" element={<CalendarPage />} />
           <Route path="/exercises" element={<ExercisesPage />} />
           <Route path="/templates" element={<TemplatesPage />} />
           <Route path="/bodyweight" element={<BodyweightPage />} />

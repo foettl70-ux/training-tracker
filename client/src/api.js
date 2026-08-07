@@ -54,4 +54,9 @@ export const api = {
   getBodyweight: () => request('/bodyweight'),
   addBodyweight: (date, weight) => request('/bodyweight', { method: 'POST', body: JSON.stringify({ date, weight }) }),
   deleteBodyweight: (id) => request(`/bodyweight/${id}`, { method: 'DELETE' }),
+
+  // Skip-Tage
+  getSkipDays: () => request('/skip-days'),
+  setSkipDay: (date, note) => request('/skip-days', { method: 'POST', body: JSON.stringify({ date, note }) }),
+  deleteSkipDay: (id) => request(`/skip-days/${id}`, { method: 'DELETE' }),
 };

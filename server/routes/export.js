@@ -42,6 +42,11 @@ router.get(
       csv += toRow(['bodyweight', r.date, '', '', '', r.weight, '', '', '']);
     });
 
+    const skipRows = await db.all('SELECT date, note FROM skip_days ORDER BY date ASC');
+    skipRows.forEach((r) => {
+      csv += toRow(['skip', r.date, '', '', '', '', '', '', r.note]);
+    });
+
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="progressor-export-${new Date().toISOString().slice(0, 10)}.csv"`);
     res.send('﻿' + csv);

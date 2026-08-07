@@ -13,6 +13,7 @@ app.use('/api/templates', require('./routes/templates'));
 app.use('/api/workouts', require('./routes/workouts'));
 app.use('/api/sets', require('./routes/sets'));
 app.use('/api/bodyweight', require('./routes/bodyweight'));
+app.use('/api/skip-days', require('./routes/skipDays'));
 app.use('/api/export', require('./routes/export'));
 
 // Wenn ein Production-Build des Frontends existiert, wird er direkt mit
