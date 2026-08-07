@@ -136,11 +136,23 @@ export default function TemplatesPage() {
             <div className="row" style={{ justifyContent: 'space-between', marginBottom: '0.5rem' }}>
               <strong>{t.name}</strong>
               <div className="row">
-                <button type="button" className="secondary" onClick={() => setEditingId(t.id)}>
-                  Bearbeiten
+                <button
+                  type="button"
+                  className="icon-btn secondary"
+                  onClick={() => setEditingId(t.id)}
+                  aria-label="Bearbeiten"
+                  title="Bearbeiten"
+                >
+                  ✎
                 </button>
-                <button type="button" className="danger" onClick={() => handleDelete(t.id)}>
-                  Löschen
+                <button
+                  type="button"
+                  className="icon-btn danger"
+                  onClick={() => handleDelete(t.id)}
+                  aria-label="Löschen"
+                  title="Löschen"
+                >
+                  🗑
                 </button>
               </div>
             </div>

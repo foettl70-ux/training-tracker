@@ -105,11 +105,23 @@ export default function ExercisesPage() {
               <>
                 <span>{ex.name}</span>
                 <div className="row">
-                  <button type="button" className="secondary" onClick={() => startEdit(ex)}>
-                    Umbenennen
+                  <button
+                    type="button"
+                    className="icon-btn secondary"
+                    onClick={() => startEdit(ex)}
+                    aria-label="Umbenennen"
+                    title="Umbenennen"
+                  >
+                    ✎
                   </button>
-                  <button type="button" className="danger" onClick={() => handleDelete(ex.id)}>
-                    Löschen
+                  <button
+                    type="button"
+                    className="icon-btn danger"
+                    onClick={() => handleDelete(ex.id)}
+                    aria-label="Löschen"
+                    title="Löschen"
+                  >
+                    🗑
                   </button>
                 </div>
               </>

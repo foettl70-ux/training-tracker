@@ -82,8 +82,14 @@ export default function BodyweightPage() {
             <span>
               {e.date} — <strong>{e.weight} kg</strong>
             </span>
-            <button type="button" className="danger" onClick={() => handleDelete(e.id)}>
-              Löschen
+            <button
+              type="button"
+              className="icon-btn danger"
+              onClick={() => handleDelete(e.id)}
+              aria-label="Löschen"
+              title="Löschen"
+            >
+              🗑
             </button>
           </div>
         ))}

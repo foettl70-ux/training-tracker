@@ -108,8 +108,14 @@ export default function TrainingPage() {
               <button type="button" className="secondary" onClick={() => navigate(`/training/${w.id}`)}>
                 Öffnen
               </button>
-              <button type="button" className="danger" onClick={() => handleDelete(w.id)}>
-                Löschen
+              <button
+                type="button"
+                className="icon-btn danger"
+                onClick={() => handleDelete(w.id)}
+                aria-label="Löschen"
+                title="Löschen"
+              >
+                🗑
               </button>
             </div>
           </div>
