@@ -46,7 +46,7 @@ router.get(
   '/:id/history',
   asyncHandler(async (req, res) => {
     const rows = await db.all(
-      `SELECT w.id AS workout_id, w.date AS date, s.weight AS weight, s.reps AS reps
+      `SELECT w.id AS workout_id, w.date AS date, s.weight AS weight, s.reps AS reps, s.note AS note
        FROM sets s
        JOIN workout_exercises we ON we.id = s.workout_exercise_id
        JOIN workouts w ON w.id = we.workout_id

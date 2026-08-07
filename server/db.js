@@ -36,8 +36,12 @@ async function run(sql, args = []) {
 }
 
 async function batch(statements) {
-  if (statements.length === 0) return;
-  await client.batch(statements, 'write');
+  if (statements.length === 0) return [];
+  const results = await client.batch(statements, 'write');
+  return results.map((res) => ({
+    lastInsertRowid: res.lastInsertRowid === undefined ? undefined : Number(res.lastInsertRowid),
+    changes: res.rowsAffected,
+  }));
 }
 
 async function initSchema() {

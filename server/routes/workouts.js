@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const asyncHandler = require('../asyncHandler');
+const { getLastSets } = require('../lastSets');
 
 const router = express.Router();
 
@@ -21,6 +22,7 @@ async function getWorkoutDetail(id) {
         'SELECT id, weight, reps, note, position FROM sets WHERE workout_exercise_id = ? ORDER BY position ASC',
         [ex.workout_exercise_id],
       );
+      ex.previousSets = await getLastSets(ex.exercise_id, id);
     }),
   );
   return { ...workout, exercises };
@@ -52,15 +54,17 @@ router.post(
     const exerciseIds = Array.isArray(req.body.exerciseIds) ? req.body.exerciseIds : [];
 
     const info = await db.run('INSERT INTO workouts (date, template_id, name) VALUES (?, ?, ?)', [date, templateId, name]);
+    const workoutId = info.lastInsertRowid;
+
     if (exerciseIds.length > 0) {
       await db.batch(
         exerciseIds.map((exerciseId, index) => ({
           sql: 'INSERT INTO workout_exercises (workout_id, exercise_id, position) VALUES (?, ?, ?)',
-          args: [info.lastInsertRowid, exerciseId, index],
+          args: [workoutId, exerciseId, index],
         })),
       );
     }
-    res.status(201).json(await getWorkoutDetail(info.lastInsertRowid));
+    res.status(201).json(await getWorkoutDetail(workoutId));
   }),
 );
 
@@ -69,6 +73,42 @@ router.delete(
   asyncHandler(async (req, res) => {
     await db.run('DELETE FROM workouts WHERE id = ?', [req.params.id]);
     res.status(204).end();
+  }),
+);
+
+router.put(
+  '/:id/exercises/reorder',
+  asyncHandler(async (req, res) => {
+    const orderedIds = Array.isArray(req.body.workoutExerciseIds) ? req.body.workoutExerciseIds : [];
+    if (orderedIds.length === 0) return res.status(400).json({ error: 'workoutExerciseIds ist erforderlich' });
+
+    await db.batch(
+      orderedIds.map((weId, index) => ({
+        sql: 'UPDATE workout_exercises SET position = ? WHERE id = ? AND workout_id = ?',
+        args: [index, weId, req.params.id],
+      })),
+    );
+
+    const workout = await db.get('SELECT template_id FROM workouts WHERE id = ?', [req.params.id]);
+    if (workout && workout.template_id) {
+      const exerciseRows = await db.all(
+        'SELECT id AS workout_exercise_id, exercise_id FROM workout_exercises WHERE workout_id = ? ORDER BY position ASC',
+        [req.params.id],
+      );
+      const templateExercises = await db.all('SELECT id, exercise_id FROM template_exercises WHERE template_id = ?', [
+        workout.template_id,
+      ]);
+      const templateExByExerciseId = new Map(templateExercises.map((te) => [te.exercise_id, te.id]));
+      const updates = exerciseRows
+        .filter((ex) => templateExByExerciseId.has(ex.exercise_id))
+        .map((ex, index) => ({
+          sql: 'UPDATE template_exercises SET position = ? WHERE id = ?',
+          args: [index, templateExByExerciseId.get(ex.exercise_id)],
+        }));
+      await db.batch(updates);
+    }
+
+    res.json(await getWorkoutDetail(req.params.id));
   }),
 );
 

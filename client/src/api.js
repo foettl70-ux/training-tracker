@@ -43,6 +43,8 @@ export const api = {
     request(`/workouts/${workoutId}/exercises`, { method: 'POST', body: JSON.stringify({ exercise_id: exerciseId }) }),
   removeExerciseFromWorkout: (workoutId, weId) =>
     request(`/workouts/${workoutId}/exercises/${weId}`, { method: 'DELETE' }),
+  reorderWorkoutExercises: (workoutId, workoutExerciseIds) =>
+    request(`/workouts/${workoutId}/exercises/reorder`, { method: 'PUT', body: JSON.stringify({ workoutExerciseIds }) }),
   addSet: (workoutId, weId, set) =>
     request(`/workouts/${workoutId}/exercises/${weId}/sets`, { method: 'POST', body: JSON.stringify(set) }),
   updateSet: (setId, set) => request(`/sets/${setId}`, { method: 'PUT', body: JSON.stringify(set) }),

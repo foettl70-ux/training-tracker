@@ -43,7 +43,7 @@ router.get(
     });
 
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="training-export-${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.setHeader('Content-Disposition', `attachment; filename="progressor-export-${new Date().toISOString().slice(0, 10)}.csv"`);
     res.send('﻿' + csv);
   }),
 );
