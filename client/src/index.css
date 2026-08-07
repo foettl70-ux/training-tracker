@@ -248,6 +248,20 @@ main.content {
   border-bottom: none;
 }
 
+.list-item > *:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.list-item > *:last-child {
+  flex-shrink: 0;
+}
+
+.list-item button {
+  white-space: nowrap;
+}
+
 .tag {
   background: var(--surface-2);
   border: 1px solid var(--border);
