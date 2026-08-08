@@ -10,6 +10,10 @@ function formatSets(sets) {
   return sets.map(formatSet).join(', ');
 }
 
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function SetRow({ set, onSave, onDelete }) {
   const [weight, setWeight] = useState(set.weight);
   const [reps, setReps] = useState(set.reps);
@@ -99,12 +103,17 @@ function HistoryPanel({ exerciseId }) {
   );
 }
 
-function ExerciseBlock({ workoutId, exercise, onChange, onMoveUp, onMoveDown, isFirst, isLast }) {
-  const suggestion =
-    exercise.previousSets[exercise.sets.length] ??
-    exercise.sets[exercise.sets.length - 1] ??
-    exercise.previousSets[exercise.previousSets.length - 1] ??
-    null;
+function ExerciseBlock({ workoutId, exercise, onChange, onMoveUp, onMoveDown, isFirst, isLast, isActiveDay }) {
+  // The carry-over prefill (last weight already filled in, reps shown as a
+  // hint) only makes sense while a workout is actively being logged today.
+  // On a past workout it sat right under the real last set looking like a
+  // half-emptied duplicate of it, so it's skipped there.
+  const suggestion = isActiveDay
+    ? exercise.previousSets[exercise.sets.length] ??
+      exercise.sets[exercise.sets.length - 1] ??
+      exercise.previousSets[exercise.previousSets.length - 1] ??
+      null
+    : null;
 
   const [weight, setWeight] = useState(suggestion?.weight ?? '');
   const [reps, setReps] = useState('');
@@ -297,6 +306,7 @@ export default function WorkoutDetailPage() {
           onMoveDown={() => moveExercise(index, 1)}
           isFirst={index === 0}
           isLast={index === workout.exercises.length - 1}
+          isActiveDay={workout.date === todayIso()}
         />
       ))}
 
