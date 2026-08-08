@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../api';
 
@@ -8,10 +8,6 @@ function formatSet(s) {
 
 function formatSets(sets) {
   return sets.map(formatSet).join(', ');
-}
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10);
 }
 
 function SetRow({ set, onSave, onDelete }) {
@@ -103,56 +99,25 @@ function HistoryPanel({ exerciseId }) {
   );
 }
 
-function ExerciseBlock({ workoutId, exercise, onChange, onMoveUp, onMoveDown, isFirst, isLast, isActiveDay }) {
-  // The carry-over prefill (last weight already filled in, reps shown as a
-  // hint) only makes sense while a workout is actively being logged today.
-  // On a past workout it sat right under the real last set looking like a
-  // half-emptied duplicate of it, so it's skipped there.
-  const suggestion = isActiveDay
-    ? exercise.previousSets[exercise.sets.length] ??
-      exercise.sets[exercise.sets.length - 1] ??
-      exercise.previousSets[exercise.previousSets.length - 1] ??
-      null
-    : null;
-
-  const [weight, setWeight] = useState(suggestion?.weight ?? '');
+function ExerciseBlock({ workoutId, exercise, onChange, onMoveUp, onMoveDown, isFirst, isLast }) {
+  const [weight, setWeight] = useState('');
   const [reps, setReps] = useState('');
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
   const [showHistory, setShowHistory] = useState(false);
-  const weightTouchedRef = useRef(false);
-
-  useEffect(() => {
-    // Skip the auto-fill if the user has already typed a weight for the set
-    // they're currently entering - otherwise a slow save from the previous
-    // set can land after they've started the next one and stomp on it.
-    if (!weightTouchedRef.current) {
-      setWeight(suggestion?.weight ?? '');
-    }
-    weightTouchedRef.current = false;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exercise.workout_exercise_id, exercise.sets.length]);
-
-  function handleWeightChange(e) {
-    weightTouchedRef.current = true;
-    setWeight(e.target.value);
-  }
 
   function addSet(e) {
     e.preventDefault();
-    // Reps is shown as a placeholder hint, not a real value - if the user
-    // leaves it untouched, submit the suggested number instead of silently
-    // doing nothing (which used to look like the tap had no effect at all).
-    const finalReps = reps !== '' ? reps : suggestion?.reps;
-    if (weight === '' || finalReps === undefined || finalReps === null) return;
+    if (weight === '' || reps === '') return;
+    const submittedWeight = weight;
     const submittedReps = reps;
     const submittedNote = note;
     api
-      .addSet(workoutId, exercise.workout_exercise_id, { weight: Number(weight), reps: Number(finalReps), note: note || undefined })
+      .addSet(workoutId, exercise.workout_exercise_id, { weight: Number(weight), reps: Number(reps), note: note || undefined })
       .then((w) => {
-        // Only clear a field if the user hasn't already started typing the
-        // next set's value while this request was in flight - otherwise the
-        // response arriving late would silently wipe what they just entered.
+        // Only clear a field if it still holds exactly what was submitted -
+        // otherwise a slow response could wipe values typed in the meantime.
+        setWeight((current) => (current === submittedWeight ? '' : current));
         setReps((current) => (current === submittedReps ? '' : current));
         setNote((current) => (current === submittedNote ? '' : current));
         onChange(w);
@@ -236,13 +201,13 @@ function ExerciseBlock({ workoutId, exercise, onChange, onMoveUp, onMoveDown, is
           inputMode="decimal"
           placeholder="kg"
           value={weight}
-          onChange={handleWeightChange}
+          onChange={(e) => setWeight(e.target.value)}
         />
         <input
           type="number"
           min="0"
           inputMode="numeric"
-          placeholder={suggestion ? String(suggestion.reps) : 'Wdh.'}
+          placeholder="Wdh."
           value={reps}
           onChange={(e) => setReps(e.target.value)}
         />
@@ -327,7 +292,6 @@ export default function WorkoutDetailPage() {
           onMoveDown={() => moveExercise(index, 1)}
           isFirst={index === 0}
           isLast={index === workout.exercises.length - 1}
-          isActiveDay={workout.date === todayIso()}
         />
       ))}
 
