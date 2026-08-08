@@ -20,8 +20,23 @@ app.use('/api/export', require('./routes/export'));
 // ausgeliefert - dann reicht ein einzelner Server (siehe README).
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
 if (fs.existsSync(clientDist)) {
-  app.use(express.static(clientDist));
+  app.use(
+    express.static(clientDist, {
+      setHeaders: (res, filePath) => {
+        // index.html must always be revalidated so a homescreen shortcut or
+        // browser never keeps serving a stale build after a deploy. The
+        // hashed JS/CSS files change name on every build, so they're safe
+        // to cache aggressively.
+        if (filePath.endsWith('.html')) {
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        } else {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+      },
+    }),
+  );
   app.get(/^(?!\/api\/).*/, (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.sendFile(path.join(clientDist, 'index.html'));
   });
 }
