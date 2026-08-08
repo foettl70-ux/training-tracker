@@ -128,9 +128,13 @@ function ExerciseBlock({ workoutId, exercise, onChange, onMoveUp, onMoveDown, is
 
   function addSet(e) {
     e.preventDefault();
-    if (weight === '' || reps === '') return;
+    // Reps is shown as a placeholder hint, not a real value - if the user
+    // leaves it untouched, submit the suggested number instead of silently
+    // doing nothing (which used to look like the tap had no effect at all).
+    const finalReps = reps !== '' ? reps : suggestion?.reps;
+    if (weight === '' || finalReps === undefined || finalReps === null) return;
     api
-      .addSet(workoutId, exercise.workout_exercise_id, { weight: Number(weight), reps: Number(reps), note: note || undefined })
+      .addSet(workoutId, exercise.workout_exercise_id, { weight: Number(weight), reps: Number(finalReps), note: note || undefined })
       .then((w) => {
         setReps('');
         setNote('');
