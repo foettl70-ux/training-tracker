@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../api';
 
@@ -120,11 +120,23 @@ function ExerciseBlock({ workoutId, exercise, onChange, onMoveUp, onMoveDown, is
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
   const [showHistory, setShowHistory] = useState(false);
+  const weightTouchedRef = useRef(false);
 
   useEffect(() => {
-    setWeight(suggestion?.weight ?? '');
+    // Skip the auto-fill if the user has already typed a weight for the set
+    // they're currently entering - otherwise a slow save from the previous
+    // set can land after they've started the next one and stomp on it.
+    if (!weightTouchedRef.current) {
+      setWeight(suggestion?.weight ?? '');
+    }
+    weightTouchedRef.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exercise.workout_exercise_id, exercise.sets.length]);
+
+  function handleWeightChange(e) {
+    weightTouchedRef.current = true;
+    setWeight(e.target.value);
+  }
 
   function addSet(e) {
     e.preventDefault();
@@ -133,11 +145,16 @@ function ExerciseBlock({ workoutId, exercise, onChange, onMoveUp, onMoveDown, is
     // doing nothing (which used to look like the tap had no effect at all).
     const finalReps = reps !== '' ? reps : suggestion?.reps;
     if (weight === '' || finalReps === undefined || finalReps === null) return;
+    const submittedReps = reps;
+    const submittedNote = note;
     api
       .addSet(workoutId, exercise.workout_exercise_id, { weight: Number(weight), reps: Number(finalReps), note: note || undefined })
       .then((w) => {
-        setReps('');
-        setNote('');
+        // Only clear a field if the user hasn't already started typing the
+        // next set's value while this request was in flight - otherwise the
+        // response arriving late would silently wipe what they just entered.
+        setReps((current) => (current === submittedReps ? '' : current));
+        setNote((current) => (current === submittedNote ? '' : current));
         onChange(w);
       })
       .catch((e) => setError(e.message));
@@ -219,7 +236,7 @@ function ExerciseBlock({ workoutId, exercise, onChange, onMoveUp, onMoveDown, is
           inputMode="decimal"
           placeholder="kg"
           value={weight}
-          onChange={(e) => setWeight(e.target.value)}
+          onChange={handleWeightChange}
         />
         <input
           type="number"
